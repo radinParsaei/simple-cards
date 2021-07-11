@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cards</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style type="text/css">
+    a {
+      user-select: none;
+      position: absolute;
+      top: 40%;
+      left: 40%;
+      right: 40%;
+    }
+    body, html {
+      height: 100%;
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="fixed-action-btn">
+    <a class="btn-floating btn-large red">
+      <i class="large material-icons">mode_edit</i>
+    </a>
+    <ul>
+      <li><a href="javascript:_export()" class="btn-floating green"><i class="material-icons" title="export">file_upload</i></a></li>
+      <li><a href="javascript:_import()" class="btn-floating blue"><i class="material-icons" title="import">file_download</i></a></li>
+      <li><a href="javascript:add()" class="btn-floating yellow"><i class="material-icons" title="add">add</i></a></li>
+      <li><a href="javascript:changeCat()" class="btn-floating red"><i class="material-icons" title="change">category</i></a></li>
+      <li><a href="javascript:removeCat()" class="btn-floating cyan"><i class="material-icons" title="delete">delete</i></a></li>
+    </ul>
+  </div>
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.fixed-action-btn');
+      var instances = M.FloatingActionButton.init(elems, []);
+    });
+    function _export() {
+      function download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+      }
+      delete localStorage['current']
+      let tmp = localStorage['current']
+      download('export.json', JSON.stringify(localStorage))
+      localStorage.setItem('current', tmp)
+    }
+    async function _import() {
+      const {value: formValues} = await Swal.fire({
+        html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">set name</label></div>',
+        focusConfirm: false,
+        preConfirm: () => {
+          return document.getElementById('swal-input2').value
+        }
+      })
+      if (formValues) {
+        let data = JSON.parse(formValues)
+        for (var i of Object.keys(data)) {
+          localStorage[i] = data[i]
+        }
+      }
+    }
+    async function add() {
+      if (localStorage['current']) {
+        const {value: formValues} = await Swal.fire({
+          title: 'Multiple inputs',
+          html:
+            '<div class="input-field col s6"><input id="swal-input1" type="text" class="validate"><label for="swal-input1">QUESTION</label></div>' +
+            '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">ANSWER</label></div>',
+          focusConfirm: false,
+          preConfirm: () => {
+            return [
+              document.getElementById('swal-input1').value,
+              document.getElementById('swal-input2').value
+            ]
+          }
+        })
+        if (formValues) {
+          var a = {}
+          a[formValues[0]] = formValues[1]
+          if (localStorage[localStorage['current']]) localStorage[localStorage['current']] += ',' + JSON.stringify(a)
+          else localStorage[localStorage['current']] = JSON.stringify(a)
+        }
+      } else {
+        Swal.fire('no category selected')
+      }
+    }
+    async function changeCat() {
+      inputOptions = []
+      for (var i of Object.keys(localStorage)) {
+        if (i != 'current') inputOptions.push(i)
+      }
+
+      const { value: cardName } = await Swal.fire({
+        title: 'Select cardset name',
+        input: 'radio',
+        inputOptions: inputOptions,
+        html: '<button onclick="createSet()" class="swal2-confirm swal2-styled">create cardsets</button>',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You need to choose something!'
+          }
+        }
+      })
+
+      if (cardName) {
+        localStorage.setItem('current', inputOptions[cardName])
+      }
+    }
+    async function removeCat() {
+      inputOptions = []
+      for (var i of Object.keys(localStorage)) {
+        if (i != 'current') inputOptions.push(i)
+      }
+
+      if (inputOptions.length == 0) {
+        Swal.fire({title: 'no cardset exists', icon: 'error'})
+        return;
+      }
+
+
+      const { value: cardName } = await Swal.fire({
+        title: 'Select cardset name',
+        input: 'radio',
+        inputOptions: inputOptions,
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You need to choose something!'
+          }
+        }
+      })
+
+      if (cardName) {
+        localStorage.removeItem(inputOptions[cardName])
+        if (localStorage.getItem('current') == inputOptions[cardName]) {
+          if (localStorage.length > 1)
+            localStorage.setItem('current', inputOptions[0])
+        }
+      }
+    }
+    function start() {
+
+    }
+    async function createSet() {
+      const {value: formValues} = await Swal.fire({
+        html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">set name</label></div>',
+        focusConfirm: false,
+        preConfirm: () => {
+          return document.getElementById('swal-input2').value
+        }
+      })
+      if (formValues) {
+        localStorage.setItem(formValues, [])
+        localStorage.setItem('current', formValues)
+      }
+    }
+  </script>
+  <a class="btn" href="javascript:start()">click me to start exam</a>
+</body>
+</html>
