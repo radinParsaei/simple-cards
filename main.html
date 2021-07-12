@@ -36,6 +36,7 @@
     </ul>
   </div>
   <script type="text/javascript">
+    var ignoredQ = -1
     document.addEventListener('DOMContentLoaded', function() {
       var elems = document.querySelectorAll('.fixed-action-btn');
       var instances = M.FloatingActionButton.init(elems, []);
@@ -60,7 +61,7 @@
     }
     async function _import() {
       const {value: formValues} = await Swal.fire({
-        html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">set name</label></div>',
+        html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">JSON</label></div>',
         focusConfirm: false,
         preConfirm: () => {
           return document.getElementById('swal-input2').value
@@ -90,7 +91,7 @@
         })
         if (formValues) {
           var a = {}
-          a[formValues[0]] = formValues[1]
+          a[formValues[0]] = [formValues[1], 7]
           if (localStorage[localStorage['current']]) localStorage[localStorage['current']] += ',' + JSON.stringify(a)
           else localStorage[localStorage['current']] = JSON.stringify(a)
         }
@@ -152,7 +153,71 @@
       }
     }
     function start() {
-
+      function getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+      }
+      if (localStorage['current']) {
+        var items = []
+        var counter = 0
+        var parsed = JSON.parse('[' + localStorage[localStorage['current']] + ']');
+        for (var i of parsed) {
+          for (var j = 0; j < i[Object.keys(i)[0]][1]; j++) {
+            if (counter != ignoredQ) items.push(counter)
+          }
+          counter++;
+        }
+        if (items.length == 0) {
+          Swal.fire('Hmmm.. there is no card to show')
+          ignoredQ = -1
+          return
+        }
+        var q = items[getRandomInt(items.length)]
+        const ans = Object.values(parsed[q])[0]
+        Swal.fire({
+          title: Object.keys(parsed[q])[0],
+          showCancelButton: true,
+          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">set name</label></div>' + 
+                '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t show this card again</button>',
+          focusConfirm: false,
+          preConfirm: () => {
+            return document.getElementById('swal-input2').value
+          }
+        }).then(function(value) {
+          if (value.value) {
+            ignoredQ = q
+            if (value.value == ans[0]) {
+              parsed[q][Object.keys(parsed[q])[0]][1]--
+              if (parsed[q][Object.keys(parsed[q])[0]][1] < 1) parsed[q][Object.keys(parsed[q])[0]][1]++
+              const tmp = JSON.stringify(parsed);
+              localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+            } else {
+              parsed[q][Object.keys(parsed[q])[0]][1]++
+              if (parsed[q][Object.keys(parsed[q])[0]][1] > 10) parsed[q][Object.keys(parsed[q])[0]][1]--
+              const tmp = JSON.stringify(parsed);
+              localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+            }
+            start()
+          }
+        })
+        document.getElementById('deletecard').addEventListener('click', function() {
+          delete parsed[q]
+          parsed.sort()
+          parsed.pop()
+          const tmp = JSON.stringify(parsed);
+          localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+          document.querySelector("body > div.swal2-container.swal2-center.swal2-backdrop-show > div > div.swal2-actions > button.swal2-cancel.swal2-styled").click() // close alert
+          start()
+        })
+        document.getElementById('ignorecard').addEventListener('click', function() {
+          parsed[q][Object.keys(parsed[q])[0]][1] = 0
+          const tmp = JSON.stringify(parsed);
+          localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+          document.querySelector("body > div.swal2-container.swal2-center.swal2-backdrop-show > div > div.swal2-actions > button.swal2-cancel.swal2-styled").click() // close alert
+          start()
+        })
+      } else {
+        Swal.fire('no cardset selected')
+      }
     }
     async function createSet() {
       const {value: formValues} = await Swal.fire({
