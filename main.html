@@ -190,13 +190,45 @@
               if (parsed[q][Object.keys(parsed[q])[0]][1] < 1) parsed[q][Object.keys(parsed[q])[0]][1]++
               const tmp = JSON.stringify(parsed);
               localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+              const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 700,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.addEventListener('mouseenter', Swal.stopTimer)
+                  toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+              })
+
+              Toast.fire({
+                icon: 'success',
+                title: 'Correct!'
+              }).then(start)
             } else {
               parsed[q][Object.keys(parsed[q])[0]][1]++
               if (parsed[q][Object.keys(parsed[q])[0]][1] > 10) parsed[q][Object.keys(parsed[q])[0]][1]--
               const tmp = JSON.stringify(parsed);
               localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+              const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.addEventListener('mouseenter', Swal.stopTimer)
+                  toast.addEventListener('mouseleave', Swal.resumeTimer)
+                  toast.addEventListener('click', Swal.close)
+                }
+              })
+
+              Toast.fire({
+                icon: 'error',
+                title: 'Ooops.. correct answer was: <br><b>' + ans[0] + '<b>'
+              }).then(start)
             }
-            start()
           }
         })
         document.getElementById('deletecard').addEventListener('click', function() {
