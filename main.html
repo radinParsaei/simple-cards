@@ -77,7 +77,7 @@
     async function add() {
       if (localStorage['current']) {
         const {value: formValues} = await Swal.fire({
-          title: 'Multiple inputs',
+          title: 'add card',
           html:
             '<div class="input-field col s6"><input id="swal-input1" type="text" class="validate"><label for="swal-input1">QUESTION</label></div>' +
             '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">ANSWER</label></div>',
@@ -176,8 +176,9 @@
         Swal.fire({
           title: Object.keys(parsed[q])[0],
           showCancelButton: true,
-          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">set name</label></div>' + 
-                '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t show this card again</button>',
+          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">set name</label></div>' +
+                '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t shoew this card again</button>' +
+                '<button id="showans" class="swal2-confirm swal2-styled">show answer</button>',
           focusConfirm: false,
           preConfirm: () => {
             return document.getElementById('swal-input2').value
@@ -215,7 +216,7 @@
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 2500,
+                timer: 3000,
                 timerProgressBar: true,
                 didOpen: (toast) => {
                   toast.addEventListener('mouseenter', Swal.stopTimer)
@@ -226,8 +227,21 @@
 
               Toast.fire({
                 icon: 'error',
-                title: 'Ooops.. correct answer was: <br><b>' + ans[0] + '<b>'
+                title: 'Ooops.. correct answer was: <br><b>' + ans[0] + '<b>',
+                html: '<button id="know-as-correct" class="swal2-confirm swal2-styled">know it as correct</button><button id="not-that-bad" class="swal2-confirm swal2-styled">not that bad</button>'
               }).then(start)
+              document.getElementById('know-as-correct').addEventListener('click', function() {
+                parsed[q][Object.keys(parsed[q])[0]][1] -= 2
+                if (parsed[q][Object.keys(parsed[q])[0]][1] < 1) parsed[q][Object.keys(parsed[q])[0]][1]++
+                const tmp = JSON.stringify(parsed);
+                localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+              });
+              document.getElementById('not-that-bad').addEventListener('click', function() {
+                parsed[q][Object.keys(parsed[q])[0]][1]--
+                if (parsed[q][Object.keys(parsed[q])[0]][1] < 1) parsed[q][Object.keys(parsed[q])[0]][1]++
+                const tmp = JSON.stringify(parsed);
+                localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+              });
             }
           }
         })
@@ -239,6 +253,10 @@
           localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
           document.querySelector("body > div.swal2-container.swal2-center.swal2-backdrop-show > div > div.swal2-actions > button.swal2-cancel.swal2-styled").click() // close alert
           start()
+        })
+        document.getElementById('showans').addEventListener('click', function() {
+          document.getElementById('swal-input2').value = 'idk';
+          document.querySelectorAll('button.swal2-confirm')[3].click()
         })
         document.getElementById('ignorecard').addEventListener('click', function() {
           parsed[q][Object.keys(parsed[q])[0]][1] = 0
