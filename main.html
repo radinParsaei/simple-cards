@@ -8,10 +8,17 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style type="text/css">
-    a {
+    a.btn {
       user-select: none;
       position: absolute;
       top: 40%;
+      left: 40%;
+      right: 40%;
+    }
+    a.btn2 {
+      user-select: none;
+      position: absolute;
+      top: 53%;
       left: 40%;
       right: 40%;
     }
@@ -19,6 +26,10 @@
       height: 100%;
       width: 100%;
       text-align: center;
+    }
+    .edit {
+      user-select: none;
+      color: black;
     }
   </style>
 </head>
@@ -176,8 +187,8 @@
         Swal.fire({
           title: Object.keys(parsed[q])[0],
           showCancelButton: true,
-          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">set name</label></div>' +
-                '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t shoew this card again</button>' +
+          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">your answer</label></div>' +
+                '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t show this card again</button>' +
                 '<button id="showans" class="swal2-confirm swal2-styled">show answer</button>',
           focusConfirm: false,
           preConfirm: () => {
@@ -282,7 +293,62 @@
         localStorage.setItem('current', formValues)
       }
     }
+    function showCards() {
+      if (localStorage['current']) {
+        let q = JSON.parse('[' + localStorage[localStorage['current']] + ']')
+        let a = '';
+        let x = 0;
+        for (var i of q) {
+          a = '<b>' + Object.keys(i)[0] + '</b> ' + Object.values(i)[0][1] + '<br>' + Object.values(i)[0][0] + '<a href="javascript:editCard(' + x++ + ')"class="edit"><span class="material-icons">edit</span></a>' + '<br>' + a
+        }
+        Swal.fire({
+          html: '<h5>' + q.length + ' cards</h5><br>' + a
+        })
+      } else {
+        Swal.fire('no cardset selected')
+      }
+    }
+    function editCard(count) {
+      if (localStorage['current']) {
+        let q = JSON.parse('[' + localStorage[localStorage['current']] + ']')
+        Swal.fire({
+          title: Object.keys(q[count])[0],
+          showCancelButton: true,
+          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">answer</label></div>' +
+                '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t show this card again</button>',
+          focusConfirm: false,
+          preConfirm: () => {
+            return document.getElementById('swal-input2').value
+          }
+        }).then(function(value) {
+          if (value.value) {
+            q[count][Object.keys(q[count])[0]][0] = value.value
+            const tmp = JSON.stringify(q);
+            localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+          }
+        })
+        document.getElementById('swal-input2').value = Object.values(q[count])[0][0]
+        document.getElementById('deletecard').addEventListener('click', function() {
+          delete q[count]
+          q.sort()
+          q.pop()
+          const tmp = JSON.stringify(q);
+          localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+          document.querySelector("body > div.swal2-container.swal2-center.swal2-backdrop-show > div > div.swal2-actions > button.swal2-cancel.swal2-styled").click() // close alert
+        })
+        document.getElementById('ignorecard').addEventListener('click', function() {
+          q[count][Object.keys(q[count])[0]][1] = 0
+          const tmp = JSON.stringify(q);
+          localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+          document.querySelector("body > div.swal2-container.swal2-center.swal2-backdrop-show > div > div.swal2-actions > button.swal2-cancel.swal2-styled").click() // close alert
+        })
+      } else {
+        Swal.fire('no cardset selected')
+      }
+    }
   </script>
-  <a class="btn" href="javascript:start()">click me to start exam</a>
+  <a class="btn" href="javascript:start()">start exam</a>
+  <br/>
+  <a class="btn btn2 blue" href="javascript:showCards()">show all cards</a>
 </body>
 </html>
