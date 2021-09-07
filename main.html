@@ -314,20 +314,25 @@
         Swal.fire({
           title: Object.keys(q[count])[0],
           showCancelButton: true,
-          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">answer</label></div>' +
+          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">question</label></div>' +
+                '<div class="input-field col s6"><input id="swal-input1" type="text" class="validate"><label for="swal-input1">answer</label></div>' +
                 '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t show this card again</button>',
           focusConfirm: false,
           preConfirm: () => {
-            return document.getElementById('swal-input2').value
+            return [document.getElementById('swal-input1').value, document.getElementById('swal-input2').value]
           }
         }).then(function(value) {
           if (value.value) {
-            q[count][Object.keys(q[count])[0]][0] = value.value
+            let tmp1 = {}
+            tmp1[value.value[1]] = [value.value[0], Object.values(q[count])[0][1]]
+            q[count] = tmp1
             const tmp = JSON.stringify(q);
             localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
           }
         })
-        document.getElementById('swal-input2').value = Object.values(q[count])[0][0]
+        document.getElementById('swal-input2').value = Object.keys(q[count])[0]
+        document.getElementById('swal-input1').value = Object.values(q[count])[0][0]
+        document.getElementById('swal-input1').focus()
         document.getElementById('deletecard').addEventListener('click', function() {
           delete q[count]
           q.sort()
