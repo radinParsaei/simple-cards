@@ -299,7 +299,9 @@
         let a = '';
         let x = 0;
         for (var i of q) {
-          a = '<b>' + Object.keys(i)[0] + '</b> ' + Object.values(i)[0][1] + '<br>' + Object.values(i)[0][0] + '<a href="javascript:editCard(' + x++ + ')"class="edit"><span class="material-icons">edit</span></a>' + '<br>' + a
+          a = '<b>' + Object.keys(i)[0] + '</b> <span id="chance' + x++ + '">' + Object.values(i)[0][1] + '</span><br>' + Object.values(i)[0][0] + '<a href="javascript:editCard(' + x + ')"class="edit"><span class="material-icons">edit</span></a>' +
+          '<a href="javascript:increaseChanceOfCard(' + x + ')"class="edit"><span class="material-icons">add</span></a>' +
+          '<a href="javascript:decreaseChanceOfCard(' + x + ')"class="edit"><span class="material-icons">remove</span></a>' + '<br>' + a
         }
         Swal.fire({
           html: '<h5>' + q.length + ' cards</h5><br>' + a
@@ -347,6 +349,31 @@
           localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
           document.querySelector("body > div.swal2-container.swal2-center.swal2-backdrop-show > div > div.swal2-actions > button.swal2-cancel.swal2-styled").click() // close alert
         })
+      } else {
+        Swal.fire('no cardset selected')
+      }
+    }
+    function increaseChanceOfCard(card) {
+      if (localStorage['current']) {
+        let q = JSON.parse('[' + localStorage[localStorage['current']] + ']')
+        q[card - 1][Object.keys(q[card - 1])[0]][1]++
+        if (q[card - 1][Object.keys(q[card - 1])[0]][1] > 10) q[card - 1][Object.keys(q[card - 1])[0]][1] = 10
+        const tmp = JSON.stringify(q);
+        localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+        console.log('chance' + (card - 1))
+        document.getElementById('chance' + (card - 1)).innerHTML = q[card - 1][Object.keys(q[card - 1])[0]][1]
+      } else {
+        Swal.fire('no cardset selected')
+      }
+    }
+    function decreaseChanceOfCard(card) {
+      if (localStorage['current']) {
+        let q = JSON.parse('[' + localStorage[localStorage['current']] + ']')
+        q[card - 1][Object.keys(q[card - 1])[0]][1]--
+        if (q[card - 1][Object.keys(q[card - 1])[0]][1] < 0) q[card - 1][Object.keys(q[card - 1])[0]][1] = 0
+        const tmp = JSON.stringify(q);
+        localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
+        document.getElementById('chance' + (card - 1)).innerHTML = q[card - 1][Object.keys(q[card - 1])[0]][1]
       } else {
         Swal.fire('no cardset selected')
       }
