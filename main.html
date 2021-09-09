@@ -311,10 +311,11 @@
       }
     }
     function editCard(count) {
+      count--
       if (localStorage['current']) {
         let q = JSON.parse('[' + localStorage[localStorage['current']] + ']')
         Swal.fire({
-          title: Object.keys(q[count])[0],
+          title: 'modify question',
           showCancelButton: true,
           html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">question</label></div>' +
                 '<div class="input-field col s6"><input id="swal-input1" type="text" class="validate"><label for="swal-input1">answer</label></div>' +
@@ -360,7 +361,6 @@
         if (q[card - 1][Object.keys(q[card - 1])[0]][1] > 10) q[card - 1][Object.keys(q[card - 1])[0]][1] = 10
         const tmp = JSON.stringify(q);
         localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
-        console.log('chance' + (card - 1))
         document.getElementById('chance' + (card - 1)).innerHTML = q[card - 1][Object.keys(q[card - 1])[0]][1]
       } else {
         Swal.fire('no cardset selected')
