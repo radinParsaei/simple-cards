@@ -172,7 +172,14 @@
         var counter = 0
         var parsed = JSON.parse('[' + localStorage[localStorage['current']] + ']');
         for (var i of parsed) {
-          for (var j = 0; j < i[Object.keys(i)[0]][1]; j++) {
+          var boostChance = 5
+          if (i[Object.keys(i)[0]].length > 2) {
+            boostChance = (new Date().getTime() - i[Object.keys(i)[0]][2]) / 86400000
+            if (boostChance < 0.5) boostChance = 0.5
+            if (boostChance > 7) boostChance = 7
+          }
+          console.log(boostChance)
+          for (var j = 0; j < i[Object.keys(i)[0]][1] * boostChance; j++) {
             if (counter != ignoredQ) items.push(counter)
           }
           counter++;
@@ -199,6 +206,11 @@
             ignoredQ = q
             if (value.value == ans[0]) {
               parsed[q][Object.keys(parsed[q])[0]][1]--
+              if (parsed[q][Object.keys(parsed[q])[0]].length == 2) {
+                parsed[q][Object.keys(parsed[q])[0]].push(new Date().getTime())
+              } else {
+                parsed[q][Object.keys(parsed[q])[0]][2] = new Date().getTime()
+              }
               if (parsed[q][Object.keys(parsed[q])[0]][1] < 1) parsed[q][Object.keys(parsed[q])[0]][1]++
               const tmp = JSON.stringify(parsed);
               localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
@@ -242,6 +254,11 @@
                 html: '<button id="know-as-correct" class="swal2-confirm swal2-styled">know it as correct</button><button id="not-that-bad" class="swal2-confirm swal2-styled">not that bad</button>'
               }).then(start)
               document.getElementById('know-as-correct').addEventListener('click', function() {
+                if (parsed[q][Object.keys(parsed[q])[0]].length == 2) {
+                  parsed[q][Object.keys(parsed[q])[0]].push(new Date().getTime())
+                } else {
+                  parsed[q][Object.keys(parsed[q])[0]][2] = new Date().getTime()
+                }
                 parsed[q][Object.keys(parsed[q])[0]][1] -= 2
                 if (parsed[q][Object.keys(parsed[q])[0]][1] < 1) parsed[q][Object.keys(parsed[q])[0]][1]++
                 const tmp = JSON.stringify(parsed);
