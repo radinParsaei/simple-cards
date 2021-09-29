@@ -34,6 +34,7 @@
       color: black;
     }
   </style>
+  <style id="themeStyle"></style>
 </head>
 <body>
   <div class="fixed-action-btn" style="margin-bottom: 70px;">
@@ -323,7 +324,7 @@
         let a = '';
         let x = 0;
         for (var i of q) {
-          a = '<b>' + Object.keys(i)[0] + '</b> <span id="chance' + x++ + '">' + Object.values(i)[0][1] + '</span><br>' + Object.values(i)[0][0] + '<a href="javascript:editCard(' + x + ')"class="edit"><span class="material-icons">edit</span></a>' +
+          a = '<b>' + Object.keys(i)[0] + '</b> <span id="chance' + x++ + '">' + Object.values(i)[0][1] + '</span><br>' + Object.values(i)[0][0] + '<a href="javascript:editCard(' + x + ')" class="edit"><span class="material-icons">edit</span></a>' +
           '<a href="javascript:increaseChanceOfCard(' + x + ')"class="edit"><span class="material-icons">add</span></a>' +
           '<a href="javascript:decreaseChanceOfCard(' + x + ')"class="edit"><span class="material-icons">remove</span></a>' + '<br>' + a
         }
@@ -411,10 +412,12 @@
       if (sessionStorage.getItem('isDark') == 'true') {
         document.getElementById('theme').href = 'https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css'
         document.body.style = 'background: #222'
+        document.getElementById('themeStyle').innerHTML = '#swal-input2 {color: white} #swal-input1 {color: white} .swal2-html-container {color: white;} .edit {color: white;}'
         document.getElementById('themeButton').innerHTML = 'light_mode'
       } else {
         document.getElementById('theme').href = 'https://cdn.jsdelivr.net/npm/@sweetalert2/theme-minimal/minimal.css'
         document.body.style = 'background: white'
+        document.getElementById('themeStyle').innerHTML = ''
         document.getElementById('themeButton').innerHTML = 'dark_mode'
       }
     }
