@@ -121,7 +121,7 @@
     async function changeCat() {
       inputOptions = []
       for (var i of Object.keys(localStorage)) {
-        if (i != 'current') inputOptions.push(i)
+        if (i != 'current' && i != '_isDark') inputOptions.push(i)
       }
 
       const { value: cardName } = await Swal.fire({
@@ -143,7 +143,7 @@
     async function removeCat() {
       inputOptions = []
       for (var i of Object.keys(localStorage)) {
-        if (i != 'current') inputOptions.push(i)
+        if (i != 'current' && i != '_isDark') inputOptions.push(i)
       }
 
       if (inputOptions.length == 0) {
@@ -404,12 +404,12 @@
       }
     }
     function changeTheme() {
-      isDark = sessionStorage.getItem('isDark') != 'true'
-      sessionStorage.setItem('isDark', isDark)
+      isDark = localStorage.getItem('_isDark') != 'true'
+      localStorage.setItem('_isDark', isDark)
       setTheme()
     }
     function setTheme() {
-      if (sessionStorage.getItem('isDark') == 'true') {
+      if (localStorage.getItem('_isDark') == 'true') {
         document.getElementById('theme').href = 'https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css'
         document.body.style = 'background: #222'
         document.getElementById('themeStyle').innerHTML = '#swal-input2 {color: white} #swal-input1 {color: white} .swal2-html-container {color: white;} .edit {color: white;}'
