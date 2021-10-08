@@ -412,7 +412,7 @@
       if (localStorage.getItem('_isDark') == 'true') {
         document.getElementById('theme').href = 'https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css'
         document.body.style = 'background: #222'
-        document.getElementById('themeStyle').innerHTML = '#swal-input2 {color: white} #swal-input1 {color: white} .swal2-html-container {color: white;} .edit {color: white;}'
+        document.getElementById('themeStyle').innerHTML = '#swal-input2 {color: white} #swal-input1 {color: white} .swal2-html-container {color: white;} .edit {color: white;} .swal2-popup.swal2-toast {box-shadow: 0 0 0.625em #444444 !important;}'
         document.getElementById('themeButton').innerHTML = 'light_mode'
       } else {
         document.getElementById('theme').href = 'https://cdn.jsdelivr.net/npm/@sweetalert2/theme-minimal/minimal.css'
