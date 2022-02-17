@@ -10,6 +10,9 @@
 
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style type="text/css">
+    .swal2-html-container {
+      overflow-x: hidden;
+    }
     a.btn {
       user-select: none;
       position: absolute;
@@ -45,8 +48,8 @@
       <li><a href="javascript:_export()" class="btn-floating green"><i class="material-icons" title="export">file_upload</i></a></li>
       <li><a href="javascript:_import()" class="btn-floating blue"><i class="material-icons" title="import">file_download</i></a></li>
       <li><a href="javascript:add()" class="btn-floating yellow"><i class="material-icons" title="add">add</i></a></li>
-      <li><a href="javascript:changeCat()" class="btn-floating red"><i class="material-icons" title="change">category</i></a></li>
-      <li><a href="javascript:removeCat()" class="btn-floating cyan"><i class="material-icons" title="delete">delete</i></a></li>
+      <li><a href="javascript:changeCart()" class="btn-floating red"><i class="material-icons" title="change">category</i></a></li>
+      <li><a href="javascript:removeCart()" class="btn-floating cyan"><i class="material-icons" title="delete">delete</i></a></li>
     </ul>
   </div>
   <div class="fixed-action-btn">
@@ -56,6 +59,7 @@
   </div>
   <script type="text/javascript">
     var ignoredQ = -1
+    var selectedImage
     document.addEventListener('DOMContentLoaded', function() {
       var elems = document.querySelectorAll('.fixed-action-btn');
       var instances = M.FloatingActionButton.init(elems, []);
@@ -73,8 +77,8 @@
 
         document.body.removeChild(element);
       }
-      delete localStorage['current']
       let tmp = localStorage['current']
+      delete localStorage['current']
       download('export.json', JSON.stringify(localStorage))
       localStorage.setItem('current', tmp)
     }
@@ -93,32 +97,53 @@
         }
       }
     }
+    function addImage() {
+      let input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.onchange = function (evt) {
+      var tgt = evt.target || window.event.srcElement,
+      files = tgt.files;
+      if (FileReader && files && files.length) {
+        var fr = new FileReader();
+        fr.onload = function () {
+          selectedImage = fr.result.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
+          document.getElementById("preview").src = "data:image/png;base64," + selectedImage;
+        }
+        fr.readAsDataURL(files[0]);
+        }
+      }
+      input.click();
+    }
     async function add() {
       if (localStorage['current']) {
         const {value: formValues} = await Swal.fire({
           title: 'add card',
           html:
             '<div class="input-field col s6"><input id="swal-input1" type="text" class="validate"><label for="swal-input1">QUESTION</label></div>' +
-            '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">ANSWER</label></div>',
+            '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">ANSWER</label></div>' +
+            '<button onclick="addImage()" class="swal2-confirm swal2-styled">attach image to question</button><img style="width: 100%" id="preview"/>',
           focusConfirm: false,
           preConfirm: () => {
             return [
               document.getElementById('swal-input1').value,
-              document.getElementById('swal-input2').value
+              document.getElementById('swal-input2').value,
+              selectedImage
             ]
           }
         })
         if (formValues) {
           var a = {}
-          a[formValues[0]] = [formValues[1], 7]
+          a[formValues[0]] = [formValues[1], 7, selectedImage]
           if (localStorage[localStorage['current']]) localStorage[localStorage['current']] += ',' + JSON.stringify(a)
           else localStorage[localStorage['current']] = JSON.stringify(a)
+          selectedImage = undefined;
         }
       } else {
         Swal.fire('no cardset selected')
       }
     }
-    async function changeCat() {
+    async function changeCart() {
       inputOptions = []
       for (var i of Object.keys(localStorage)) {
         if (i != 'current' && i != '_isDark') inputOptions.push(i)
@@ -140,7 +165,7 @@
         localStorage.setItem('current', inputOptions[cardName])
       }
     }
-    async function removeCat() {
+    async function removeCart() {
       inputOptions = []
       for (var i of Object.keys(localStorage)) {
         if (i != 'current' && i != '_isDark') inputOptions.push(i)
@@ -171,6 +196,57 @@
         }
       }
     }
+    function fullscreen(e) {
+      let div = document.createElement("div");
+      div.style.position = "absolute";
+      div.style.top = 0;
+      div.style.left = 0;
+      div.style.height = "100%";
+      div.style.width = "100%";
+      div.style.backgroundColor = "#000000AA";
+      div.style.zIndex = 99999;
+      let img = document.createElement("img");
+      img.style.minHeight = "10%";
+      img.style.maxWidth = "100%";
+      img.style.maxWidth = "100%";
+      img.style.position = "absolute";
+      img.style.transform = "translate(-50%, -50%)";
+      img.style.top = "50%";
+      img.style.left = "50%";
+      img.style.right = 0;
+      img.src = e.target && e.target.src || ("data:image/png;base64," + e);
+      div.appendChild(img);
+      let zoomIn = document.createElement('i');
+      let scale = 100;
+      zoomIn.classList.add("material-icons");
+      zoomIn.classList.add("blue");
+      zoomIn.style.position = "absolute";
+      zoomIn.style.right = "10px";
+      zoomIn.style.color = 'white';
+      zoomIn.style.fontSize = "24pt";
+      zoomIn.style.userSelect = "none";
+      zoomIn.style.borderRadius = "3px";
+      let zoomOut = zoomIn.cloneNode();
+      zoomOut.innerHTML = "zoom_out";
+      zoomOut.addEventListener('click', () => {
+        scale -= 10;
+        img.style.transform = `translate(-50%, -50%) scale(${scale}%)`;
+      });
+      zoomOut.style.bottom = "10px";
+      zoomIn.innerHTML = "zoom_in";
+      zoomIn.addEventListener('click', () => {
+        scale += 10;
+        img.style.transform = `translate(-50%, -50%) scale(${scale}%)`;
+      });
+      zoomIn.style.bottom = "50px";
+      div.appendChild(zoomIn);
+      div.appendChild(zoomOut);
+      document.body.appendChild(div);
+      div.addEventListener('click', function(e) {
+        if (e.target == div || e.target == img)
+          document.body.removeChild(div);
+      });
+    }
     function start() {
       function getRandomInt(max) {
         return Math.floor(Math.random() * max);
@@ -181,12 +257,11 @@
         var parsed = JSON.parse('[' + localStorage[localStorage['current']] + ']');
         for (var i of parsed) {
           var boostChance = 5
-          if (i[Object.keys(i)[0]].length > 2) {
-            boostChance = (new Date().getTime() - i[Object.keys(i)[0]][2]) / 86400000
+          if (i[Object.keys(i)[0]].length > 3) {
+            boostChance = (new Date().getTime() - i[Object.keys(i)[0]][3]) / 86400000
             if (boostChance < 0.5) boostChance = 0.5
             if (boostChance > 7) boostChance = 7
           }
-          console.log(boostChance)
           for (var j = 0; j < i[Object.keys(i)[0]][1] * boostChance; j++) {
             if (counter != ignoredQ) items.push(counter)
           }
@@ -202,7 +277,7 @@
         Swal.fire({
           title: Object.keys(parsed[q])[0],
           showCancelButton: true,
-          html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">your answer</label></div>' +
+          html: '<img style="width: 100%" id="image"><div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">your answer</label></div>' +
                 '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t show this card again</button>' +
                 '<button id="showans" class="swal2-confirm swal2-styled">show answer</button>',
           focusConfirm: false,
@@ -214,10 +289,10 @@
             ignoredQ = q
             if (value.value == ans[0]) {
               parsed[q][Object.keys(parsed[q])[0]][1]--
-              if (parsed[q][Object.keys(parsed[q])[0]].length == 2) {
+              if (parsed[q][Object.keys(parsed[q])[0]].length == 3) {
                 parsed[q][Object.keys(parsed[q])[0]].push(new Date().getTime())
               } else {
-                parsed[q][Object.keys(parsed[q])[0]][2] = new Date().getTime()
+                parsed[q][Object.keys(parsed[q])[0]][3] = new Date().getTime()
               }
               if (parsed[q][Object.keys(parsed[q])[0]][1] < 1) parsed[q][Object.keys(parsed[q])[0]][1]++
               const tmp = JSON.stringify(parsed);
@@ -262,10 +337,10 @@
                 html: '<button id="know-as-correct" class="swal2-confirm swal2-styled">know it as correct</button><button id="not-that-bad" class="swal2-confirm swal2-styled">not that bad</button>'
               }).then(start)
               document.getElementById('know-as-correct').addEventListener('click', function() {
-                if (parsed[q][Object.keys(parsed[q])[0]].length == 2) {
+                if (parsed[q][Object.keys(parsed[q])[0]].length == 3) {
                   parsed[q][Object.keys(parsed[q])[0]].push(new Date().getTime())
                 } else {
-                  parsed[q][Object.keys(parsed[q])[0]][2] = new Date().getTime()
+                  parsed[q][Object.keys(parsed[q])[0]][3] = new Date().getTime()
                 }
                 parsed[q][Object.keys(parsed[q])[0]][1] -= 2
                 if (parsed[q][Object.keys(parsed[q])[0]][1] < 1) parsed[q][Object.keys(parsed[q])[0]][1]++
@@ -281,6 +356,10 @@
             }
           }
         })
+        if (Object.values(parsed[q])[0][2]) {
+          document.getElementById("image").src = "data:image/png;base64," + Object.values(parsed[q])[0][2];
+          document.getElementById("image").onclick = fullscreen;
+        }
         document.getElementById('deletecard').addEventListener('click', function() {
           delete parsed[q]
           parsed.sort()
@@ -324,13 +403,22 @@
         let a = '';
         let x = 0;
         for (var i of q) {
-          a = '<b>' + Object.keys(i)[0] + '</b> <span id="chance' + x++ + '">' + Object.values(i)[0][1] + '</span><br>' + Object.values(i)[0][0] + '<a href="javascript:editCard(' + x + ')" class="edit"><span class="material-icons">edit</span></a>' +
+          a = '<b>' + Object.keys(i)[0] + '</b> <span id="chance' + x++ + '">' + Object.values(i)[0][1] + '</span>' + (Object.values(i)[0][2]? '<a href="javascript:showImage(' + x + ')" class="edit"><span class="material-icons">photo</span></a>':'') + '<br>' + Object.values(i)[0][0] + '<a href="javascript:editCard(' + x + ')" class="edit"><span class="material-icons">edit</span></a>' +
           '<a href="javascript:increaseChanceOfCard(' + x + ')"class="edit"><span class="material-icons">add</span></a>' +
-          '<a href="javascript:decreaseChanceOfCard(' + x + ')"class="edit"><span class="material-icons">remove</span></a>' + '<br>' + a
+          '<a href="javascript:decreaseChanceOfCard(' + x + ')"class="edit"><span class="material-icons">remove</span></a>' + '<br><br>' + a
         }
         Swal.fire({
           html: '<h5>' + q.length + ' cards</h5><br>' + a
         })
+      } else {
+        Swal.fire('no cardset selected')
+      }
+    }
+    function showImage(count) {
+      count--;
+      if (localStorage['current']) {
+        let q = JSON.parse('[' + localStorage[localStorage['current']] + ']')
+        fullscreen(Object.values(q[count])[0][2])
       } else {
         Swal.fire('no cardset selected')
       }
@@ -344,7 +432,8 @@
           showCancelButton: true,
           html: '<div class="input-field col s6"><input id="swal-input2" type="text" class="validate"><label for="swal-input2">question</label></div>' +
                 '<div class="input-field col s6"><input id="swal-input1" type="text" class="validate"><label for="swal-input1">answer</label></div>' +
-                '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t show this card again</button>',
+                '<button id="deletecard" class="swal2-confirm swal2-styled">delete this card</button><button id="ignorecard" class="swal2-confirm swal2-styled">don\'t show this card again</button>' + 
+                '<button onclick="addImage()" class="swal2-confirm swal2-styled">attach image to question</button><br><img style="width: 100%" id="preview"/>',
           focusConfirm: false,
           preConfirm: () => {
             return [document.getElementById('swal-input1').value, document.getElementById('swal-input2').value]
@@ -352,12 +441,17 @@
         }).then(function(value) {
           if (value.value) {
             let tmp1 = {}
-            tmp1[value.value[1]] = [value.value[0], Object.values(q[count])[0][1]]
+            tmp1[value.value[1]] = [value.value[0], Object.values(q[count])[0][1], selectedImage]
             q[count] = tmp1
+            selectedImage = undefined
             const tmp = JSON.stringify(q);
             localStorage[localStorage['current']] = tmp.substring(1, tmp.length - 1)
           }
         })
+        if (Object.values(q[count])[0][2]) {
+          document.getElementById("preview").src = "data:image/png;base64," + Object.values(q[count])[0][2];
+          selectedImage = Object.values(q[count])[0][2];
+        }
         document.getElementById('swal-input2').value = Object.keys(q[count])[0]
         document.getElementById('swal-input1').value = Object.values(q[count])[0][0]
         document.getElementById('swal-input1').focus()
